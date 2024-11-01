@@ -45,7 +45,7 @@
                         <tr
                             v-for="employe, i in listeEmployes"
                             :key="employe.id"
-
+                            :class="{'est_en_conge':estEnCOnge(employe)}"
                             >
                             <td>{{i}}</td>
                             <td>{{employe.id}}</td>
@@ -56,10 +56,28 @@
                             <td>-</td>
                             <td class="act">
                                 <button
-                                    
+                                    class="btn-sm btn-danger"
+                                    @click="performDelete(employe, i)"
                                 >
                                     <i class="mdi mdi-pencil"></i>
-                                    Ajouter Congé
+                                    Supprimer
+                                </button>
+
+                                <button
+                                    class="btn-sm btn-primary"
+                                    @click="performModify(employe, i)"
+                                >
+                                    <i class="mdi mdi-pencil"></i>
+                                    Modifier
+                                </button>
+
+                                <button
+                                    class="btn-sm btn-succes"
+                                    v-if="!estEnCOnge(employe)"
+                                    @click="performCreateConge(employe, i)"
+                                >
+                                    <i class="mdi mdi-pencil"></i>
+                                    Congé
                                 </button>
     
                             </td>
@@ -71,22 +89,46 @@
         <CreateEmploye
             v-if="create_employe_shown"
             @createEmited="performCreateEmploye"
+            @close="create_employe_shown=false"
+            :employe_prop="employe_obj"
+            :index_prop="index_obj"
         
         ></CreateEmploye>
+        <ConfirmView
+            v-if="confirm_shown"
+            :employe_prop="employe_obj"
+            :index_prop="index_obj"
+            @close="confirm_shown=false"
+        >
+        </ConfirmView>
+        <CreateConge
+            :employe_prop="employe_obj"
+            :index_prop="index_obj"
+            @close="create_conge_shown=false"
+            v-if="create_conge_shown"
+        ></CreateConge>
     </section>
 </template>
 <script>
 import CreateEmploye from '@/components/CreateEmploye.vue';
+import ConfirmView from '@/components/ConfirmView.vue';
+import CreateConge from '@/components/CreateConge.vue';
 import { handleError } from 'vue';
 export default {
     data(){
         return{
             listeEmployes:this.$store.state.listeEmployes,
             create_employe_shown:false,
+            confirm_shown:false,
+            employe_obj : null,
+            create_conge_shown : false,
+            index_obj:null
         }
     },
     components:{
-        CreateEmploye
+        CreateEmploye,
+        ConfirmView,
+        CreateConge
     },
     watch:{
         "$store.state.listeEmployes":{
@@ -101,6 +143,28 @@ export default {
         performCreateEmploye(data){
             this.$store.state.listeEmployes.push(data)
             this.create_employe_shown = false
+        },
+        performDelete(employe, idx){
+            this.employe_obj = employe
+            this.index_obj = idx
+            this.confirm_shown=true
+        },
+        performModify(employe, idx){
+            this.employe_obj = employe
+            this.index_obj = idx
+            this.create_employe_shown=true
+        },
+        performCreateConge(employe, idx){
+            this.employe_obj = employe
+            this.index_obj = idx
+            this.create_conge_shown=true
+            
+        },
+        estEnCOnge(employe){
+            let today = new Date()
+            let debut = new Date(employe.debut_conge)
+            let fin = new Date(employe.fin_conge) 
+            return today>=debut && today<=fin
         }
     },
     mounted(){
@@ -114,5 +178,7 @@ export default {
 </script>
 
 <style scoped>
-
+.est_en_conge{
+    background-color: aqua;
+}
 </style>

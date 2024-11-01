@@ -6,7 +6,7 @@
 		>
 			<div class="d-head">
 				<div class="title">
-					<h4>Page de creation employe</h4>
+					<h4>Page de {{ employe_prop?'modification':'création' }} employe</h4>
 				</div>
 				<div class="close" @click="$emit('close')">
 					x
@@ -38,7 +38,7 @@
                     class="btn btn-primary"
                     @click="enregistrer"
                     type="submit"
-                    value="Ajouter"
+                    :value="employe_prop?'Modifier':'Ajouter'"
                     />
                 </div>
 			</div>
@@ -47,6 +47,8 @@
 </template>
 
 <script>
+import { handleError } from 'vue';
+
 export default {
     data(){
         return{
@@ -57,16 +59,34 @@ export default {
             genre:"",
         }
     },
+	mounted(){
+		if(this.employe_prop){
+			this.id = this.employe_prop.id
+			this.nom = this.employe_prop.nom
+			this.prenom = this.employe_prop.prenom
+			this.age = this.employe_prop.age
+			this.genre = this.employe_prop.genre
+		}
+		
+	},
+	props:["employe_prop","index_prop"],
 	methods: {
         enregistrer(){
+
             let data = {
                 id:this.id,
                 nom:this.nom,
                 prenom:this.prenom,
                 age:this.age,
                 genre:this.genre,
+				debut_conge:"",
+				fin_conge:""
             }
-            this.$emit("createEmited",data )
+			if(this.employe_prop){
+				this.$store.state.listeEmployes[this.index_prop] = data
+			}else{
+            	this.$emit("createEmited",data )
+			}
         },
 		close() {
 			this.$emit("close");
